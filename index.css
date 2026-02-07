@@ -165,146 +165,37 @@ html, body {
 }
 
 /* ==============================
-   Image Waterfall Section
+   Image Waterfall Overlay (Game Over)
    ============================== */
 
-#waterfall-section {
-  position: relative;
-  padding: 80px 20px 120px;
-  background: linear-gradient(180deg, #f7f7f7 0%, #1a1a2e 8%, #16213e 50%, #0f3460 100%);
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-#waterfall-section::before {
-  content: '';
-  position: absolute;
+#waterfall-overlay {
+  display: none;
+  position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  height: 120px;
-  background: linear-gradient(180deg, #f7f7f7, transparent);
-  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 10;
+  overflow: hidden;
   pointer-events: none;
 }
 
-.waterfall-title {
-  text-align: center;
-  margin-bottom: 60px;
-  position: relative;
-  z-index: 2;
-}
-
-.waterfall-title h2 {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: 0.3em;
-  color: #e94560;
-  margin: 0 0 12px;
-  text-shadow: 0 0 40px rgba(233, 69, 96, 0.3);
-}
-
-.waterfall-title p {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 0.15em;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-#waterfall-container {
-  columns: 5;
-  column-gap: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-.waterfall-item {
-  break-inside: avoid;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  background: #2a2a3e;
-  will-change: transform;
-}
-
-.waterfall-item img {
-  display: block;
-  width: 100%;
-  height: auto;
-  transition: filter 0.4s ease;
-}
-
-.waterfall-item:hover img {
-  filter: brightness(1.1) saturate(1.2);
-}
-
-.waterfall-overlay {
+.wf-item {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 30px 16px 16px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  opacity: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(233, 69, 96, 0.25);
+  will-change: transform, opacity;
+  border: 2px solid rgba(255, 255, 255, 0.15);
 }
 
-.waterfall-label {
-  font-family: 'Open Sans', sans-serif;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  background: rgba(233, 69, 96, 0.8);
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-/* Responsive waterfall columns */
-@media (max-width: 1100px) {
-  #waterfall-container {
-    columns: 4;
-  }
-}
-
-@media (max-width: 800px) {
-  #waterfall-container {
-    columns: 3;
-  }
-  .waterfall-title h2 {
-    font-size: 2.5rem;
-  }
-}
-
-@media (max-width: 550px) {
-  #waterfall-container {
-    columns: 2;
-    column-gap: 10px;
-  }
-  .waterfall-item {
-    margin-bottom: 10px;
-    border-radius: 8px;
-  }
-  .waterfall-title h2 {
-    font-size: 1.8rem;
-  }
-  #waterfall-section {
-    padding: 60px 12px 80px;
-  }
-}
-
-@media (max-width: 360px) {
-  #waterfall-container {
-    columns: 1;
-  }
+.wf-item img {
+  display: block;
+  width: 140px;
+  height: auto;
+  min-height: 90px;
+  background: #2a2a3e;
 }

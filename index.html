@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="index.css">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="index.js"></script>
 </head>
 
@@ -32,14 +31,8 @@
         </div>
     </div>
 
-    <!-- Image Waterfall Section -->
-    <section id="waterfall-section">
-        <div class="waterfall-title">
-            <h2>GALLERY</h2>
-            <p>Scroll down to unleash the waterfall</p>
-        </div>
-        <div id="waterfall-container"></div>
-    </section>
+    <!-- Image Waterfall Overlay (shown on Game Over) -->
+    <div id="waterfall-overlay"></div>
 </body>
 
 <script>
@@ -54,156 +47,107 @@
 
 <script>
 (function() {
-    gsap.registerPlugin(ScrollTrigger);
+    var overlay = document.getElementById('waterfall-overlay');
+    var imageCount = 30;
+    var activeTimeline = null;
+    var spawnInterval = null;
 
-    var container = document.getElementById('waterfall-container');
-    var imageCount = 40;
-    var columns = 5;
-    var baseWidth = 220;
-
-    // Random placeholder image sources with variety
-    var categories = [
-        'nature', 'architecture', 'technology', 'animals', 'travel',
-        'food', 'art', 'fashion', 'sports', 'music'
-    ];
-
-    function getRandomImageUrl(index) {
-        var w = baseWidth + Math.floor(Math.random() * 80);
-        var h = 160 + Math.floor(Math.random() * 200);
-        var seed = index + Math.floor(Math.random() * 1000);
+    function getRandomImageUrl() {
+        var w = 120 + Math.floor(Math.random() * 100);
+        var h = 100 + Math.floor(Math.random() * 120);
+        var seed = Math.floor(Math.random() * 10000);
         return 'https://picsum.photos/seed/' + seed + '/' + w + '/' + h;
     }
 
-    // Create waterfall items
-    for (var i = 0; i < imageCount; i++) {
-        var item = document.createElement('div');
-        item.className = 'waterfall-item';
+    function startWaterfall() {
+        overlay.style.display = 'block';
+        // Fade in the dark overlay background
+        gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' });
 
-        var img = document.createElement('img');
-        img.src = getRandomImageUrl(i);
-        img.alt = 'Gallery image ' + (i + 1);
-        img.loading = 'lazy';
+        var count = 0;
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
 
-        var overlay = document.createElement('div');
-        overlay.className = 'waterfall-overlay';
+        // Spawn images in staggered waves
+        spawnInterval = setInterval(function() {
+            if (count >= imageCount) {
+                clearInterval(spawnInterval);
+                spawnInterval = null;
+                return;
+            }
 
-        var label = document.createElement('span');
-        label.className = 'waterfall-label';
-        label.textContent = '#' + categories[i % categories.length];
+            var item = document.createElement('div');
+            item.className = 'wf-item';
 
-        overlay.appendChild(label);
-        item.appendChild(img);
-        item.appendChild(overlay);
-        container.appendChild(item);
+            var img = document.createElement('img');
+            img.src = getRandomImageUrl();
+            img.alt = '';
+            item.appendChild(img);
+            overlay.appendChild(item);
+
+            // Random horizontal position
+            var startX = Math.random() * (vw - 160);
+            // Random slight rotation
+            var rot = -25 + Math.random() * 50;
+            // Random size variation
+            var scale = 0.6 + Math.random() * 0.6;
+            // Fall distance (above viewport to below)
+            var startY = -200 - Math.random() * 150;
+            var endY = vh + 100 + Math.random() * 200;
+            // Duration varies for depth effect
+            var dur = 2.5 + Math.random() * 3;
+
+            gsap.set(item, {
+                x: startX,
+                y: startY,
+                rotation: rot,
+                scale: scale,
+                opacity: 0
+            });
+
+            gsap.to(item, {
+                y: endY,
+                rotation: rot + (-20 + Math.random() * 40),
+                opacity: 1,
+                duration: dur,
+                ease: 'power1.in',
+                delay: Math.random() * 0.3
+            });
+
+            // Subtle horizontal sway
+            gsap.to(item, {
+                x: startX + (-60 + Math.random() * 120),
+                duration: dur,
+                ease: 'sine.inOut'
+            });
+
+            count++;
+        }, 120);
     }
 
-    // GSAP Animations
-    var items = document.querySelectorAll('.waterfall-item');
-
-    // Initial entrance animation - items cascade in like a waterfall
-    items.forEach(function(item, index) {
-        var col = index % columns;
-        var delay = col * 0.08;
-        var fromY = -60 - Math.random() * 100;
-        var rotation = -15 + Math.random() * 30;
-
-        gsap.set(item, {
+    function clearWaterfall() {
+        if (spawnInterval) {
+            clearInterval(spawnInterval);
+            spawnInterval = null;
+        }
+        gsap.to(overlay, {
             opacity: 0,
-            y: fromY,
-            rotation: rotation,
-            scale: 0.6
-        });
-
-        ScrollTrigger.create({
-            trigger: item,
-            start: 'top 95%',
-            onEnter: function() {
-                gsap.to(item, {
-                    opacity: 1,
-                    y: 0,
-                    rotation: 0,
-                    scale: 1,
-                    duration: 0.8 + Math.random() * 0.5,
-                    delay: delay,
-                    ease: 'back.out(1.4)',
-                    clearProps: 'transform'
-                });
-            },
-            once: true
-        });
-    });
-
-    // Hover effects via GSAP
-    items.forEach(function(item) {
-        item.addEventListener('mouseenter', function() {
-            gsap.to(item, {
-                scale: 1.05,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-                y: -8,
-                duration: 0.35,
-                ease: 'power2.out'
-            });
-            gsap.to(item.querySelector('.waterfall-overlay'), {
-                opacity: 1,
-                duration: 0.3
-            });
-        });
-
-        item.addEventListener('mouseleave', function() {
-            gsap.to(item, {
-                scale: 1,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                y: 0,
-                duration: 0.35,
-                ease: 'power2.out'
-            });
-            gsap.to(item.querySelector('.waterfall-overlay'), {
-                opacity: 0,
-                duration: 0.3
-            });
-        });
-    });
-
-    // Parallax floating effect on scroll
-    items.forEach(function(item, index) {
-        var speed = (index % 3 === 0) ? 30 : (index % 3 === 1) ? -20 : 15;
-
-        gsap.to(item, {
-            y: speed,
-            scrollTrigger: {
-                trigger: item,
-                start: 'top bottom',
-                end: 'bottom top',
-                scrub: 1.5
+            duration: 0.3,
+            onComplete: function() {
+                overlay.style.display = 'none';
+                // Remove all spawned images
+                while (overlay.firstChild) {
+                    overlay.removeChild(overlay.firstChild);
+                }
             }
         });
-    });
+    }
 
-    // Title animation
-    gsap.from('.waterfall-title h2', {
-        scrollTrigger: {
-            trigger: '.waterfall-title',
-            start: 'top 85%',
-            once: true
-        },
-        y: 60,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out'
-    });
-
-    gsap.from('.waterfall-title p', {
-        scrollTrigger: {
-            trigger: '.waterfall-title',
-            start: 'top 85%',
-            once: true
-        },
-        y: 40,
-        opacity: 0,
-        duration: 1,
-        delay: 0.2,
-        ease: 'power3.out'
-    });
+    // Expose globally so index.js can call it
+    window.imageWaterfall = {
+        start: startWaterfall,
+        clear: clearWaterfall
+    };
 })();
 </script>
 
